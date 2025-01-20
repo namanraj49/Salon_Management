@@ -1,0 +1,21 @@
+{
+  "name": "salon-management",
+  "version": "1.0.0",
+  "description": "salon management",
+  "main": "index.js",
+  "scripts": {
+    "start": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.9.3",
+    "path": "^0.12.7",
+    "session": "^0.1.0"
+  }
+}
