@@ -41,3 +41,4 @@ const barberSchema = new mongoose.Schema({
 {timestamps:true}
 );
   
+export const Barber = mongoose.model("Barber",barberSchema) 
