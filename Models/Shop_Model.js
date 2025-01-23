@@ -32,6 +32,11 @@ const ShopSchema = new mongoose.Schema(
     
    },
 
+   shopImage:{
+    type:String,
+    required:true
+   }
+
     
 
    
