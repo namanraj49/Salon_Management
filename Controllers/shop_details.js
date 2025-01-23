@@ -2,6 +2,7 @@ import {asyncHandler} from "../utils/asyncHnadler.js"
 import {Shop} from "../Models/Shop_Model"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {ApiError} from "../utils/ApiError.js"
+import { Await } from "react-router-dom"
 
 
 //get shop details from frontend
@@ -64,11 +65,106 @@ import {ApiError} from "../utils/ApiError.js"
   return res.staus(201).json(
     new ApiResponse(200,createdShop,"shop registered successfully")
   )
+})
 
 
 
+   //get shop on searching 
+  //pehle sare shop lelo database se
+  // get shop  
+  //id nikalo
+  //shop database me find krlo  by id, name,address
+  //error ans response handle krlo bbb
+
+   const searchshop = asyncHandler(async(req,res,next) =>{
+
+    const {id} = req.params;
+    const {query} = req.query;
+
+    const shops = await Shop.find({
+        $or:[
+            {shopName:{$regex:query,$options:"i"}},
+            {address:{$regex:query,$options:"i"}}
+        ]
+    });
+
+    if(shop.length === 0){
+        throw new ApiError(404,"shop not find");
+
+    }
+
+    return res.status(201).json(
+      new ApiResponse(200,shops,"found shop")
+    );
+
+   });
 
 
+  
+
+  //get all services in shop
+  //first find shop  by id params
+  //then handle if not found
+  //return services from database
+
+  const get_services = asyncHandler (async(req,res,next) =>{
+    const {id} = req.params
+
+    const shop = await Shop.findOne(id).populate("services");
+    if(!shop){
+        throw new ApiError(400,"shop not find");
+
+    }
+
+    if(!shop.services){
+        throw new ApiError(400,"services not find");
+
+    }
+
+    return res.status(200).json(
+        new ApiResponse("Services retrieved successfully", shop.services)
+      );
+ 
   })
 
-  export {register_shop}
+
+  //sari shops dekhne ke liye
+
+  const get_shops = asyncHandler(async(req,res,next)=>{
+    const allshops = await Shop.find().populate("barbers services");
+
+    return res.staus(201).json(
+        new ApiResponse(200,allshopsshops,"all shops retrieved")
+      )
+  })
+
+
+// barber dhundne ke liye kisi shop me
+
+  const get_barbers = asyncHandler (async(req,res,next) =>{
+    const {id} = req.params
+
+    const shop = await Shop.findOne(id).populate("barbers");
+    if(!shop){
+        throw new ApiError(400,"shop not find");
+
+    }
+
+    if(!shop.barbers){
+        throw new ApiError(400,"barber not find");
+
+    }
+
+    return res.status(200).json(
+        new ApiResponse("barbers retrieved successfully", shop.barbers)
+      );
+ 
+  })
+
+//update shop details
+
+
+
+
+
+  export {register_shop,searchshop,get_services,get_shops,get_barbers}
