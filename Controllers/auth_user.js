@@ -1,5 +1,5 @@
-const User_Model = require("../Models/User_Model");
-const Client_Model = require("../Models/Client_Model");
+const Shop_Model = require("../Models/Shop_Model");
+const Customer_Model = require("../Models/Customer_Model");
 const bcrypt = require("bcrypt");
 const generateToken = require("../Controllers/Token_generator");
 
@@ -8,13 +8,17 @@ const findExistingUser = async (Model, criteria) => {
   return await Model.findOne(criteria);
 };
 
-// Helper function to register a new user or client
+// Helper function to register a new user or shop
 const registerEntity = async (Model, entityData, res) => {
   try {
+    if (!entityData.password) {
+      return res.status(400).send("Password is required.");
+    }
+
     // Hash the password
     const hashedPassword = await bcrypt.hash(entityData.password, 10);
 
-    // Create the entity
+    // Create the entity (shop or user)
     const entity = await Model.create({
       ...entityData,
       password: hashedPassword,
@@ -46,7 +50,7 @@ const checkPassword = async (user, password, res) => {
     res.cookie("token", token);
 
     // Redirect to homepage (update route as needed)
-    res.redirect("/homepage"); // Change "/homepage" to your actual route
+    res.redirect("/homepage");
   } catch (err) {
     console.error(err.message);
     res.status(500).send("Error validating password.");
@@ -56,57 +60,82 @@ const checkPassword = async (user, password, res) => {
 // Register user
 module.exports.registerUser = async (req, res) => {
   const { email, phone, name, password } = req.body;
+  
+  // Logging incoming request data
+  console.log("Incoming request data:", req.body);
+
+  if (!email || !phone || !name || !password) {
+    console.log("Missing required fields!");
+    return res.status(400).send("All fields are required.");
+  }
+
   try {
-    const existingUser = await findExistingUser(User_Model, { $or: [{ email }, { phone }] });
+    const existingUser = await findExistingUser(Customer_Model, { $or: [{ email }, { phone }] });
     if (existingUser) {
       return res.status(400).send("You already have an account.");
     }
-    await registerEntity(User_Model, { email, phone, name, password }, res);
+
+    await registerEntity(Customer_Model, { email, phone, name, password }, res);
   } catch (err) {
-    console.error(err.message);
+    console.error("Error during registration:", err);  // More detailed error logging
     res.status(500).send("Error registering user.");
   }
 };
 
-// Register client
-module.exports.registerClient = async (req, res) => {
-  const { email, phone, name, password } = req.body;
+
+// Register shop
+module.exports.registerShop = async (req, res) => {
+  const { email, phone, name, password, shopName, ownerName, address, shopImage } = req.body;
+  if (!email || !phone || !name || !password || !shopName || !ownerName || !address) {
+    return res.status(400).send("All fields are required.");
+  }
   try {
-    const existingClient = await findExistingUser(Client_Model, { $or: [{ email }, { phone }] });
-    if (existingClient) {
-      return res.status(400).send("Client already exists.");
+    const existingShop = await findExistingUser(Shop_Model, { $or: [{ email }, { phone }] });
+    if (existingShop) {
+      return res.status(400).send("Shop already exists.");
     }
-    await registerEntity(Client_Model, { email, phone, name, password }, res);
+    await registerEntity(
+      Shop_Model,
+      { email, phone, name, password, shop: { shopName, ownerName, address, shopImage } },
+      res
+    );
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Error registering client.");
+    res.status(500).send("Error registering shop.");
   }
 };
 
 // Login user
 module.exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send("Email and password are required.");
+  }
   try {
-    const user = await User_Model.findOne({ email });
+    const user = await Customer_Model.findOne({ email });
     if (!user) {
       return res.status(400).send("User is not registered.");
     }
     await checkPassword(user, password, res);
+   
   } catch (err) {
     console.error(err.message);
     res.status(500).send("An error occurred while logging in.");
   }
 };
 
-// Login client
-module.exports.loginClient = async (req, res) => {
+// Login shop
+module.exports.loginShop = async (req, res) => {
   const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).send("Email and password are required.");
+  }
   try {
-    const client = await Client_Model.findOne({ email });
-    if (!client) {
-      return res.status(400).send("Client is not registered.");
+    const shop = await Shop_Model.findOne({ email });
+    if (!shop) {
+      return res.status(400).send("Shop is not registered.");
     }
-    await checkPassword(client, password, res);
+    await checkPassword(shop, password, res);
   } catch (err) {
     console.error(err.message);
     res.status(500).send("An error occurred while logging in.");
@@ -124,8 +153,8 @@ module.exports.logoutUser = function (req, res) {
   });
 };
 
-// Logout client
-module.exports.logoutClient = function (req, res) {
+// Logout shop
+module.exports.logoutShop = function (req, res) {
   res.clearCookie("token");
   req.session.destroy((err) => {
     if (err) {

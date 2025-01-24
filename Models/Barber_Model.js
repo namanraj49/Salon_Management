@@ -1,44 +1,62 @@
-const barberSchema = new mongoose.Schema({
+const mongoose = require('mongoose');
+
+const barberSchema = new mongoose.Schema(
+  {
     name: {
       type: String,
       required: true,
+      trim: true,
     },
-    experience: {
-      type: Number, // Years of experience
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
       required: true,
     },
-    specialties: [String], // E.g., "fade", "beard trim"
-    availability: {
-      type: [{
-        day: {
-          type: String,
-          required: true,
-        },
-        startTime: {
-          type: String,
-          required: true,
-        },
-        endTime: {
-          type: String,
-          required: true,
-        },
-      }],
-      default: [],
+    role: {
+      type: String,
+      enum: ['admin', 'barber', 'employee'],
+      default: 'barber',
     },
-    rating: {
-        type: Number,
-        default: 0,
+    phone: {
+      type: String,
+      required: true,
+    },
+    shop: {
+      shopName: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
       },
-      reviews: [{
-        customer: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Customer',
-        },
-        reviewText: String,
-        rating: Number,
-      }],
+      ownerName: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+      },
+      address: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+      },
+      shopImage: {
+        type: String,
+        required: false, // Optional, in case some barbers don't have shop images
+      },
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-{timestamps:true}
+  { timestamps: true }
 );
-  
-export const Barber = mongoose.model("Barber",barberSchema) 
+
+module.exports = mongoose.model('Barber', barberSchema);

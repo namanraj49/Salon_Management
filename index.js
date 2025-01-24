@@ -1,18 +1,15 @@
-import {app} from './app.js'
-
 const express = require("express");
 const path = require("path");
-const app = express();
 const db = require("./Config/connections");
-const cookieparser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 
 require("dotenv").config(); // For loading environment variables
 
+const app = require("./app"); // Importing app from app.js
+
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieparser());
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 // Initialize session
@@ -26,11 +23,12 @@ app.use(
 );
 
 // Basic route
-app.use("/", function (req, res) {
+app.get("/", (req, res) => {
   res.send("Hello, world!");
 });
 
 // Start server
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
