@@ -1,5 +1,5 @@
 const User_Model = require("../Models/User_Model");
-const Client_Model = require("../Models/Client_Model");
+const Client_Model = require("../Models/Shop_Model");
 const bcrypt = require("bcrypt");
 const generateToken = require("../Controllers/Token_generator");
 

@@ -35,7 +35,28 @@ const ShopSchema = new mongoose.Schema(
    shopImage:{
     type:String,
     required:true
-   }
+   },
+
+   barber:{
+    type:mongoose.Schema.Types.ObjectId,
+    ref:'Barber'
+   },
+
+   rating: {
+    type: Number,
+    default: 0,
+  },
+
+
+  reviews: [{
+    customer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Customer',
+    },
+    reviewText: String,
+        rating: Number,
+      }],
+
 
     
 

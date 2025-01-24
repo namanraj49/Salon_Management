@@ -10,3 +10,5 @@ const userSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('User', userSchema);
+ // ye ab koi kaam ka nhi he
+ 
