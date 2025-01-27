@@ -5,6 +5,8 @@ import {ApiError} from "../utils/ApiError.js"
 import { Await } from "react-router-dom"
 
 
+
+
 //get shop details from frontend
   //validate format and empty fields
   //check if already exists
@@ -134,7 +136,7 @@ import { Await } from "react-router-dom"
     const allshops = await Shop.find().populate("barbers services");
 
     return res.staus(201).json(
-        new ApiResponse(200,allshopsshops,"all shops retrieved")
+        new ApiResponse(200,allshops,"all shops retrieved")
       )
   })
 
