@@ -2,7 +2,7 @@ const Shop_Model = require("../Models/Shop_Model");
 const Customer_Model = require("../Models/Customer_Model");
 const bcrypt = require("bcrypt");
 const generateToken = require("../Controllers/Token_generator");
-
+const generateRefreshToken = require("../Controllers/Token_generator");
 // Helper function to check if a user exists
 const findExistingUser = async (Model, criteria) => {
   return await Model.findOne(criteria);
@@ -26,10 +26,10 @@ const registerEntity = async (Model, entityData, res) => {
 
     // Generate a token
     const token = generateToken(entity);
-
+    const refreshToken = generateRefreshToken(entity);
     // Set the token in a cookie
-    res.cookie("token", token);
-
+    res.cookie("token", token, { httpOnly: true, secure: isProduction });
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: isProduction });
     // Respond with success
     res.status(201).send("Registered successfully.");
   } catch (err) {
@@ -47,15 +47,20 @@ const checkPassword = async (user, password, res) => {
     }
 
     const token = generateToken(user);
-    res.cookie("token", token);
+    const refreshToken = generateRefreshToken(user);
 
-    // Redirect to homepage (update route as needed)
-    res.redirect("/homepage");
+    // Set tokens in cookies
+    res.cookie("token", token, { httpOnly: true, secure: isProduction });
+    res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: isProduction });
+
+    // Respond with success
+    return { success: true, token, refreshToken };
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Error validating password.");
+    console.error("Error validating password:", err.message);
+    return res.status(500).send("Error validating password.");
   }
 };
+
 
 // Register user
 module.exports.registerUser = async (req, res) => {
@@ -111,18 +116,24 @@ module.exports.loginUser = async (req, res) => {
   if (!email || !password) {
     return res.status(400).send("Email and password are required.");
   }
+
   try {
     const user = await Customer_Model.findOne({ email });
     if (!user) {
       return res.status(400).send("User is not registered.");
     }
-    await checkPassword(user, password, res);
-   
+
+    // Delegate password checking and token generation to checkPassword
+    const result = await checkPassword(user, password, res);
+    if (result.success) {
+      return res.status(200).send("User logged in successfully.");
+    }
   } catch (err) {
-    console.error(err.message);
+    console.error("Error during user login:", err.message);
     res.status(500).send("An error occurred while logging in.");
   }
 };
+
 
 // Login shop
 module.exports.loginShop = async (req, res) => {
@@ -130,21 +141,29 @@ module.exports.loginShop = async (req, res) => {
   if (!email || !password) {
     return res.status(400).send("Email and password are required.");
   }
+
   try {
     const shop = await Shop_Model.findOne({ email });
     if (!shop) {
       return res.status(400).send("Shop is not registered.");
     }
-    await checkPassword(shop, password, res);
+
+    // Delegate password checking and token generation to checkPassword
+    const result = await checkPassword(shop, password, res);
+    if (result.success) {
+      return res.status(200).send("Shop logged in successfully.");
+    }
   } catch (err) {
-    console.error(err.message);
+    console.error("Error during shop login:", err.message);
     res.status(500).send("An error occurred while logging in.");
   }
 };
 
+
 // Logout user
 module.exports.logoutUser = function (req, res) {
   res.clearCookie("token");
+  res.clearCookie("refreshToken");
   req.session.destroy((err) => {
     if (err) {
       console.error("Failed to destroy session", err);
@@ -156,6 +175,7 @@ module.exports.logoutUser = function (req, res) {
 // Logout shop
 module.exports.logoutShop = function (req, res) {
   res.clearCookie("token");
+  res.clearCookie("refreshToken");
   req.session.destroy((err) => {
     if (err) {
       console.error("Failed to destroy session", err);

@@ -7,12 +7,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
 app.use(cors({
     origin: 'http://localhost:3001',  // Allow frontend from localhost:3001
     methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods
     credentials: true  // Allow credentials like cookies if needed
   }));
-// Routes
+
+
 app.use("/users", userRouter);
 
 module.exports = app;
