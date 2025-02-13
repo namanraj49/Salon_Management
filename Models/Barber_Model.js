@@ -1,3 +1,5 @@
+import Shop_Model from "./Shop_Model";
+
 const barberSchema = new mongoose.Schema({
     name: {
       type: String,
@@ -48,6 +50,21 @@ const barberSchema = new mongoose.Schema({
         reviewText: String,
         rating: Number,
       }],
+
+      shop_owner:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Shop',
+        required:true
+      },
+      schedule:{
+        Monday:[{start:String,end:String}],
+        Tuesday:[{start:String,end:String}],
+        Wednesday:[{start:String,end:String}],
+        Thursday:[{start:String,end:String}],
+        Friday:[{start:String,end:String}],
+        Saturday:[{start:String,end:String}],
+        Sunday:[{start:String,end:String}],
+      }
   },
 {timestamps:true}
 );
