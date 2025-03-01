@@ -1,10 +1,9 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 
-// Hard-coded password
-const password = "dIa1b3ud1qeHrjrh";
 
 // MongoDB connection URI
-const uri = `mongodb+srv://namanrajpurohit49:${password}@cluster0.scgpi.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://namanrajpurohit49:LbPcKj3Q4QR3AjED@cluster0.0wqqt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Connect to MongoDB
 mongoose

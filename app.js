@@ -8,11 +8,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
+const allowedOrigins = ['http://localhost:3001', 'http://localhost:8081'];
+
 app.use(cors({
-    origin: 'http://localhost:3001',  // Allow frontend from localhost:3001
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allowed methods
-    credentials: true  // Allow credentials like cookies if needed
-  }));
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
+
 
 
 app.use("/users", userRouter);
