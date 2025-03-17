@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
 const generateToken = (user) => {
+  console.log("Generating Token for:", user.email); 
   if (!process.env.JWT_KEY) {
     throw new Error("JWT_KEY is not set in environment variables.");
   }

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const generateToken = require("./Token_generator"); // Function to generate access tokens
+const {generateToken} = require("./Token_generator"); // Function to generate access tokens
 
 module.exports.refreshToken = async (req, res) => {
   // Extract the refresh token from cookies

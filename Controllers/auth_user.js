@@ -1,8 +1,11 @@
-const Shop_Model = require("../Models/Shop_Model");
+
+const isProduction = process.env.NODE_ENV === "production";
+const Barber_Model = require("../Models/Barber_Model");
 const Customer_Model = require("../Models/Customer_Model");
 const bcrypt = require("bcrypt");
-const generateToken = require("../Controllers/Token_generator");
-const generateRefreshToken = require("../Controllers/Token_generator");
+const jwt = require("jsonwebtoken");
+const {generateToken} = require("../Controllers/Token_generator");
+const {generateRefreshToken} = require("../Controllers/Token_generator");
 // Helper function to check if a user exists
 const findExistingUser = async (Model, criteria) => {
   return await Model.findOne(criteria);
@@ -41,25 +44,27 @@ const registerEntity = async (Model, entityData, res) => {
 // Helper function to validate a password
 const checkPassword = async (user, password, res) => {
   try {
+    console.log("User Password from DB:", user.password); // Debugging
+    console.log("Entered Password:", password); // Debugging
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).send("Password is incorrect.");
+      return { success: false, error: "Password is incorrect." };
     }
 
     const token = generateToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // Set tokens in cookies
     res.cookie("token", token, { httpOnly: true, secure: isProduction });
     res.cookie("refreshToken", refreshToken, { httpOnly: true, secure: isProduction });
 
-    // Respond with success
     return { success: true, token, refreshToken };
   } catch (err) {
     console.error("Error validating password:", err.message);
-    return res.status(500).send("Error validating password.");
+    return { success: false, error: "Error validating password." };
   }
 };
+
 
 
 // Register user
@@ -91,17 +96,33 @@ module.exports.registerUser = async (req, res) => {
 // Register shop
 module.exports.registerShop = async (req, res) => {
   const { email, phone, name, password, shopName, ownerName, address, shopImage } = req.body;
+
   if (!email || !phone || !name || !password || !shopName || !ownerName || !address) {
     return res.status(400).send("All fields are required.");
   }
+
   try {
-    const existingShop = await findExistingUser(Shop_Model, { $or: [{ email }, { phone }] });
+    const existingShop = await findExistingUser(Barber_Model, { $or: [{ email }, { phone }] });
+
     if (existingShop) {
       return res.status(400).send("Shop already exists.");
     }
+
+    // ✅ Correcting the shop object structure
     await registerEntity(
-      Shop_Model,
-      { email, phone, name, password, shop: { shopName, ownerName, address, shopImage } },
+      Barber_Model,
+      {
+        email,
+        phone,
+        name,
+        password,
+        shop: {
+          shopName,
+          ownerName,
+          address,
+          shopImage,
+        },
+      },
       res
     );
   } catch (err) {
@@ -110,29 +131,37 @@ module.exports.registerShop = async (req, res) => {
   }
 };
 
+
 // Login user
 module.exports.loginUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).send("Email and password are required.");
+    return res.status(400).json({ error: "Email and password are required." });
   }
 
   try {
     const user = await Customer_Model.findOne({ email });
     if (!user) {
-      return res.status(400).send("User is not registered.");
+      return res.status(400).json({ error: "User is not registered." });
     }
 
-    // Delegate password checking and token generation to checkPassword
     const result = await checkPassword(user, password, res);
     if (result.success) {
-      return res.status(200).send("User logged in successfully.");
+      return res.status(200).json({
+        message: "User logged in successfully.",
+        token: result.token,
+        refreshToken: result.refreshToken,
+        role: "user", 
+      });
+    } else {
+      return res.status(401).json({ error: result.error });
     }
   } catch (err) {
     console.error("Error during user login:", err.message);
-    res.status(500).send("An error occurred while logging in.");
+    res.status(500).json({ error: "An error occurred while logging in." });
   }
 };
+
 
 
 // Login shop
@@ -143,7 +172,7 @@ module.exports.loginShop = async (req, res) => {
   }
 
   try {
-    const shop = await Shop_Model.findOne({ email });
+    const shop = await Barber_Model.findOne({ email });
     if (!shop) {
       return res.status(400).send("Shop is not registered.");
     }
@@ -151,13 +180,21 @@ module.exports.loginShop = async (req, res) => {
     // Delegate password checking and token generation to checkPassword
     const result = await checkPassword(shop, password, res);
     if (result.success) {
-      return res.status(200).send("Shop logged in successfully.");
+      return res.status(200).json({
+        message: "User logged in successfully.",
+        token: result.token,
+        refreshToken: result.refreshToken,
+        role: "shop", 
+      });
+    } else {
+      return res.status(401).json({ error: result.error });
     }
   } catch (err) {
-    console.error("Error during shop login:", err.message);
-    res.status(500).send("An error occurred while logging in.");
+    console.error("Error during user login:", err.message);
+    res.status(500).json({ error: "An error occurred while logging in." });
   }
 };
+
 
 
 // Logout user

@@ -3,7 +3,8 @@ const mongoose = require("mongoose");
 
 
 // MongoDB connection URI
-const uri = `mongodb+srv://namanrajpurohit49:LbPcKj3Q4QR3AjED@cluster0.0wqqt.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = "mongodb+srv://namanrajpurohit49:LbPcKj3Q4QR3AjED@cluster0.0wqqt.mongodb.net/salonDB?retryWrites=true&w=majority";
+
 
 // Connect to MongoDB
 mongoose
