@@ -152,6 +152,7 @@ module.exports.loginUser = async (req, res) => {
         token: result.token,
         refreshToken: result.refreshToken,
         role: "user", 
+        userId: user._id,  // ✅ Return userId
       });
     } else {
       return res.status(401).json({ error: result.error });
@@ -164,33 +165,34 @@ module.exports.loginUser = async (req, res) => {
 
 
 
+
 // Login shop
 module.exports.loginShop = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.status(400).send("Email and password are required.");
+    return res.status(400).json({ error: "Email and password are required." });
   }
 
   try {
     const shop = await Barber_Model.findOne({ email });
     if (!shop) {
-      return res.status(400).send("Shop is not registered.");
+      return res.status(400).json({ error: "Shop is not registered." });
     }
 
-    // Delegate password checking and token generation to checkPassword
     const result = await checkPassword(shop, password, res);
     if (result.success) {
       return res.status(200).json({
-        message: "User logged in successfully.",
+        message: "Shop logged in successfully.",  // ✅ Fixed message
         token: result.token,
         refreshToken: result.refreshToken,
-        role: "shop", 
+        role: "shop",
+        shopId: shop._id,  // ✅ Return shopId
       });
     } else {
       return res.status(401).json({ error: result.error });
     }
   } catch (err) {
-    console.error("Error during user login:", err.message);
+    console.error("Error during shop login:", err.message);
     res.status(500).json({ error: "An error occurred while logging in." });
   }
 };

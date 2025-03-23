@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 const serviceSchema = new mongoose.Schema({
+  barberId: { type: mongoose.Schema.Types.ObjectId, ref: "Barber", required: true }, // Link to Barber
   name: { type: String, required: true },
   description: { type: String },
   price: { type: Number, required: true },
@@ -8,4 +9,4 @@ const serviceSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Service', serviceSchema);
+module.exports = mongoose.model("Service", serviceSchema);
