@@ -67,11 +67,10 @@ const checkPassword = async (user, password, res) => {
 
 
 
-// Register user
 module.exports.registerUser = async (req, res) => {
   const { email, phone, name, password } = req.body;
   
-  // Logging incoming request data
+
   console.log("Incoming request data:", req.body);
 
   if (!email || !phone || !name || !password) {
@@ -87,13 +86,13 @@ module.exports.registerUser = async (req, res) => {
 
     await registerEntity(Customer_Model, { email, phone, name, password }, res);
   } catch (err) {
-    console.error("Error during registration:", err);  // More detailed error logging
+    console.error("Error during registration:", err);  
     res.status(500).send("Error registering user.");
   }
 };
 
 
-// Register shop
+
 module.exports.registerShop = async (req, res) => {
   const { email, phone, name, password, shopName, ownerName, address, shopImage } = req.body;
 
@@ -152,7 +151,7 @@ module.exports.loginUser = async (req, res) => {
         token: result.token,
         refreshToken: result.refreshToken,
         role: "user", 
-        userId: user._id,  // ✅ Return userId
+        userId: user._id,  
       });
     } else {
       return res.status(401).json({ error: result.error });

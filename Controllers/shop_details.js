@@ -55,3 +55,38 @@ module.exports.addService = async (req, res) => {
     return res.status(500).json({ error: "An error occurred while adding the service." });
   }
 };
+
+module.exports.getBarberServices = async (req, res) => {
+  try {
+      const services = await Service.find({ barberId: req.params.barberId });
+      res.json(services);
+  } catch (error) {
+      res.status(500).json({ error: "Server error" });
+  }
+};
+
+// Update a specific service
+module.exports.updateService = async (req, res) => {
+  try {
+      console.log("Received update request for service ID:", req.params.serviceId);
+      console.log("Request body:", req.body);
+
+      const { name, description, price, duration } = req.body;
+      const updatedService = await Service.findByIdAndUpdate(
+          req.params.serviceId,
+          { name, description, price, duration },
+          { new: true }
+      );
+
+      if (!updatedService) {
+          console.log("Service not found");
+          return res.status(404).json({ error: "Service not found" });
+      }
+
+      console.log("Updated service:", updatedService);
+      res.json(updatedService);
+  } catch (error) {
+      console.error("Update Error:", error);
+      res.status(500).json({ error: "Server error" });
+  }
+};
