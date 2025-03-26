@@ -1,14 +1,17 @@
 const express = require("express");
 const userRouter = require("./routes/user.routes.js");
+const slotRoutes = require("./routes/slots.routes.js");
+
 const cors = require('cors');
 const app = express();
+
 
 // Middleware to handle JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-const allowedOrigins = ['http://localhost:3001', 'http://localhost:8081'];
+const allowedOrigins = ['http://localhost:3001', 'http://localhost:8081' , 'http://localhost:3000'];
 
 app.use(cors({
     origin: function (origin, callback) {
@@ -26,6 +29,8 @@ app.use(cors({
 
 
 app.use("/users", userRouter);
+app.use("/slots", slotRoutes); // Add slot routes
+
 
 
 module.exports = app;
